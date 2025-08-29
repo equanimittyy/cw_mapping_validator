@@ -48,10 +48,10 @@ for mapping in os.listdir(mapper_dir):
 
         # Appending loop for factions
         if os.path.exists(factions):
-            print(f'== Factions found in {mapping}. ==')
+            print(f'== 🛡 Factions found in {mapping}. ==')
             for x in os.listdir(factions):
                 if x.endswith('.xml'):
-                    print(f'// Processing {x}.')
+                    print(f'// 🛡 Processing {x}.')
                     faction_tree = ET.parse(os.path.join(factions,x))
                     faction_root = faction_tree.getroot()
                     for faction_parent in faction_root:
@@ -72,20 +72,37 @@ for mapping in os.listdir(mapper_dir):
                   
         # Appending loop for titles
         if os.path.exists(titles):
-            print(f'Titles found in {mapping}.')
+            print(f'== 👑 Titles found in {mapping}. ==')
             for x in os.listdir(titles):
                 if x.endswith('.xml'):
+                    print(f'// 👑 Processing {x}.')
                     titles_tree = ET.parse(os.path.join(titles,x))
                     titles_root = titles_tree.getroot()
-                    print(titles_root)
+                    for titles_parent in titles_root:
+                        for titles_child in titles_parent:
+                            # Create new row
+                            df_titles_new_row = pd.DataFrame([{
+                                "cw_type": titles_child.tag,
+                                "cw_category": 'Title',
+                                "cw_unit_parent": titles_parent.attrib.get('name'),
+                                "cw_unit": titles_child.attrib.get('type'),
+                                "attila_map_key": titles_child.attrib.get('key'),
+                                "cw_source_file": x,
+                                "cw_source_folder": mapping
+                            }])
 
+                            # Append new row
+                            df_titles = pd.concat([df_titles,df_titles_new_row])
 
 # Validate data frames from CW and Attila, and produce report/log
 df_attila.to_csv('report_merged_attila_mapping.csv')
+
 df_factions = pd.merge(df_factions,df_attila, on='attila_map_key', how ='left')
 df_factions.to_csv('report_factions.csv')
 df_factions_error = pd.DataFrame(df_factions[df_factions['attila_source'].isna()])
 df_factions_error.to_csv('report_factions_error.csv')
 
-# print('titles:')
-# print(df_titles)
+df_titles = pd.merge(df_titles,df_attila, on='attila_map_key', how ='left')
+df_titles.to_csv('report_titles.csv')
+df_titles_error = pd.DataFrame(df_titles[df_titles['attila_source'].isna()])
+df_titles_error.to_csv('report_titles_error.csv')
