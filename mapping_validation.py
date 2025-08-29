@@ -63,8 +63,8 @@ for mapping in os.listdir(mapper_dir):
                                 "cw_unit_parent": faction_parent.attrib.get('name'),
                                 "cw_unit": faction_child.attrib.get('type'),
                                 "attila_map_key": faction_child.attrib.get('key'),
-                                "source_file": x,
-                                "source_folder": mapping
+                                "cw_source_file": x,
+                                "cw_source_folder": mapping
                             }])
 
                             # Append new row
