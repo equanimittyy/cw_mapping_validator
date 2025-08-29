@@ -7,7 +7,6 @@ working_dir = os.path.dirname(__file__)
 export_dir = os.path.join(working_dir, 'attila_exports','db','main_units_tables')
 mapper_dir = '../unit mappers'
 os.chdir(working_dir)
-print(working_dir)
 
 if os.path.exists(export_dir):
     print(f'== Mapping files found! ==')
