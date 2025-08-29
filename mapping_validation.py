@@ -28,7 +28,6 @@ print(df_attila)
 print(os.listdir(mapper_dir))
 
 # Declare data frame for combined cw unit mapping
-print('DEBUG: cw unit mapping')
 # df_cultures = pd.DataFrame() -- Not necessary, as cultures do not have Attila unit keys.
 df_factions = pd.DataFrame()
 df_titles = pd.DataFrame()
@@ -84,8 +83,9 @@ for mapping in os.listdir(mapper_dir):
 # Validate data frames from CW and Attila, and produce report/log
 df_attila.to_csv('report_merged_attila_mapping.csv')
 df_factions = pd.merge(df_factions,df_attila, on='attila_map_key', how ='left')
-print(df_factions)
 df_factions.to_csv('report_factions.csv')
+df_factions_error = pd.DataFrame(df_factions[df_factions['attila_source'].isna()])
+df_factions_error.to_csv('report_factions_error.csv')
 
 # print('titles:')
 # print(df_titles)
