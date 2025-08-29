@@ -1,9 +1,15 @@
 import os
 import pandas as pd
 import xml.etree.ElementTree as ET
+import sys
+
+if getattr(sys, 'frozen', False):
+    application_path = os.path.dirname(sys.executable)
+elif __file__:
+    application_path = os.path.dirname(__file__)
 
 # Identify working directories
-working_dir = os.path.dirname(__file__)
+working_dir = application_path
 export_dir = os.path.join(working_dir, 'attila_exports','db','main_units_tables')
 mapper_dir = '../unit mappers'
 os.chdir(working_dir)
