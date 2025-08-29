@@ -12,6 +12,8 @@ if os.path.exists(export_dir):
     print(f'== Mapping files found! ==')
 else:
     print(f'== No mapping files found in attila_exports. Please ensure you export the .tsv files to "attila_exports/db/main_units_tables" ==')
+    print(working_dir)
+    print(export_dir)
     input("Press Enter to quit...")
     quit()
 
