@@ -1,5 +1,1 @@
-report_factions.csv
-report_merged_attila_mapping.csv
-report_factions_error.csv
-report_titles_error.csv
-report_titles.csv
+*.csv
