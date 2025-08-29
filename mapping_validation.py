@@ -4,7 +4,7 @@ import xml.etree.ElementTree as ET
 
 # Identify working directories
 working_dir = os.path.dirname(__file__)
-export_dir = os.path.join(working_dir, 'attila_exports/db/land_units_tables')
+export_dir = os.path.join(working_dir, 'attila_exports/db/main_units_tables')
 mapper_dir = '../unit mappers'
 
 # Declare data frame for Attila unit mapping
