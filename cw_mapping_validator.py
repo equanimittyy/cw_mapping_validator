@@ -7,6 +7,13 @@ working_dir = os.path.dirname(__file__)
 export_dir = os.path.join(working_dir, 'attila_exports/db/main_units_tables')
 mapper_dir = '../unit mappers'
 
+if os.path.exists(export_dir):
+    print(f'== Mapping files found! ==')
+else:
+    print(f'== No mapping files found in attila_exports. Please ensure you export the .tsv files to "attila_exports/db/main_units_tables" ==')
+    input("Press Enter to quit...")
+    quit()
+
 # Declare data frame for Attila unit mapping
 df_attila = pd.DataFrame()
 
@@ -108,3 +115,5 @@ df_titles.to_csv('report_titles.csv')
 df_titles_error = pd.DataFrame(df_titles[df_titles['attila_source'].isna()])
 df_titles_error.to_csv('report_titles_error.csv')
 print(f'Report produced for title files.')
+input("Press Enter to quit...")
+quit()
