@@ -64,10 +64,10 @@ for mapping in os.listdir(mapper_dir):
 
         # Appending loop for factions
         if os.path.exists(factions):
-            print(f'== 🛡 Factions found in {mapping}. ==')
+            print(f'== ☼ Factions found in {mapping}. ==')
             for x in os.listdir(factions):
                 if x.endswith('.xml'):
-                    print(f'// 🛡 Processing {x}.')
+                    print(f'// ☼ Processing {x}.')
                     faction_tree = ET.parse(os.path.join(factions,x))
                     faction_root = faction_tree.getroot()
                     for faction_parent in faction_root:
@@ -88,10 +88,10 @@ for mapping in os.listdir(mapper_dir):
                   
         # Appending loop for titles
         if os.path.exists(titles):
-            print(f'== 👑 Titles found in {mapping}. ==')
+            print(f'== ♠ Titles found in {mapping}. ==')
             for x in os.listdir(titles):
                 if x.endswith('.xml'):
-                    print(f'// 👑 Processing {x}.')
+                    print(f'// ♠ Processing {x}.')
                     titles_tree = ET.parse(os.path.join(titles,x))
                     titles_root = titles_tree.getroot()
                     for titles_parent in titles_root:
