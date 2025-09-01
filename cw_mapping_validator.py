@@ -15,9 +15,16 @@ mapper_dir = '../unit mappers'
 os.chdir(working_dir)
 
 if os.path.exists(export_dir):
-    print(f'== Mapping files found! ==')
+    if not any(file.endswith('.tsv') for file in os.listdir(export_dir)):
+        print(f'== Mapping directory exists, but no .tsv mapping were files found! ==')
+        print(f'DEBUG: CWD = {working_dir}')
+        print(f'DEBUG: EXPORT_DIR = {export_dir}')
+        input("Press Enter to quit...")
+        quit()
+    else:
+        print(f'== Mapping files found! ==')
 else:
-    print(f'== No mapping files found in attila_exports. Please ensure you export the .tsv files to "attila_exports/db/main_units_tables" ==')
+    print(f'== No mapping files directory found in attila_exports. Please ensure you export the .tsv files to "attila_exports/db/main_units_tables" ==')
     print(f'DEBUG: CWD = {working_dir}')
     print(f'DEBUG: EXPORT_DIR = {export_dir}')
     input("Press Enter to quit...")
@@ -51,7 +58,9 @@ df_titles = pd.DataFrame()
 for mapping in os.listdir(mapper_dir):
         # culture = os.path.join(mapper_dir,mapping,'Cultures') -- Not necessary, as cultures do not have Attila unit keys.
         factions = os.path.join(mapper_dir,mapping,'Factions')
+        faction_rows = []
         titles = os.path.join(mapper_dir,mapping,'Titles')
+        titles_rows = []
 
         # # Appending loop for culture  -- Not necessary, as cultures do not have Attila unit keys.
         # if os.path.exists(culture):
@@ -73,7 +82,7 @@ for mapping in os.listdir(mapper_dir):
                     for faction_parent in faction_root:
                         for faction_child in faction_parent:
                             # Create new row
-                            df_faction_new_row = pd.DataFrame([{
+                            faction_rows.append([{
                                 "cw_type": faction_child.tag,
                                 "cw_category": 'Faction',
                                 "cw_unit_parent": faction_parent.attrib.get('name'),
@@ -83,8 +92,8 @@ for mapping in os.listdir(mapper_dir):
                                 "cw_source_folder": mapping
                             }])
 
-                            # Append new row
-                            df_factions = pd.concat([df_factions,df_faction_new_row])
+        # Append results
+        df_factions = pd.concat([df_factions,pd.DataFrame(faction_rows)],ignore_index=True)                   
                   
         # Appending loop for titles
         if os.path.exists(titles):
