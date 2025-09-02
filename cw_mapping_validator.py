@@ -24,7 +24,7 @@ if os.path.exists(export_dir):
     else:
         print(f'== Mapping files found! ==')
 else:
-    print(f'== No mapping files directory found in attila_exports. Please ensure you export the .tsv files to "attila_exports/db/main_units_tables" ==')
+    print(f'== No mapping files directory found in attila_exports. Please ensure you export .tsv files from RPFM/PFM to "attila_exports/db/main_units_tables" ==')
     print(f'DEBUG: CWD = {working_dir}')
     print(f'DEBUG: EXPORT_DIR = {export_dir}')
     input("Press Enter to quit...")
@@ -53,14 +53,14 @@ print(os.listdir(mapper_dir))
 # Declare data frame for combined cw unit mapping
 # df_cultures = pd.DataFrame() -- Not necessary, as cultures do not have Attila unit keys.
 df_factions = pd.DataFrame()
+faction_rows = []
 df_titles = pd.DataFrame()
+titles_rows = []
 
 for mapping in os.listdir(mapper_dir):
         # culture = os.path.join(mapper_dir,mapping,'Cultures') -- Not necessary, as cultures do not have Attila unit keys.
         factions = os.path.join(mapper_dir,mapping,'Factions')
-        faction_rows = []
         titles = os.path.join(mapper_dir,mapping,'Titles')
-        titles_rows = []
 
         # # Appending loop for culture  -- Not necessary, as cultures do not have Attila unit keys.
         # if os.path.exists(culture):
@@ -82,7 +82,7 @@ for mapping in os.listdir(mapper_dir):
                     for faction_parent in faction_root:
                         for faction_child in faction_parent:
                             # Create new row
-                            faction_rows.append([{
+                            faction_rows.append({
                                 "cw_type": faction_child.tag,
                                 "cw_category": 'Faction',
                                 "cw_unit_parent": faction_parent.attrib.get('name'),
@@ -90,10 +90,7 @@ for mapping in os.listdir(mapper_dir):
                                 "attila_map_key": faction_child.attrib.get('key'),
                                 "cw_source_file": x,
                                 "cw_source_folder": mapping
-                            }])
-
-        # Append results
-        df_factions = pd.concat([df_factions,pd.DataFrame(faction_rows)],ignore_index=True)                   
+                            })              
                   
         # Appending loop for titles
         if os.path.exists(titles):
@@ -106,7 +103,7 @@ for mapping in os.listdir(mapper_dir):
                     for titles_parent in titles_root:
                         for titles_child in titles_parent:
                             # Create new row
-                            df_titles_new_row = pd.DataFrame([{
+                            titles_rows.append({
                                 "cw_type": titles_child.tag,
                                 "cw_category": 'Title',
                                 "cw_unit_parent": titles_parent.attrib.get('name'),
@@ -114,10 +111,11 @@ for mapping in os.listdir(mapper_dir):
                                 "attila_map_key": titles_child.attrib.get('key'),
                                 "cw_source_file": x,
                                 "cw_source_folder": mapping
-                            }])
+                            })     
 
-                            # Append new row
-                            df_titles = pd.concat([df_titles,df_titles_new_row])
+# Append processing results
+df_factions = pd.concat([df_factions,pd.DataFrame(faction_rows)],ignore_index=True)     
+df_titles = pd.concat([df_titles,pd.DataFrame(titles_rows)],ignore_index=True)
 
 # Validate data frames from CW and Attila, and produce report/log
 df_attila.to_csv('report_merged_attila_mapping.csv')
