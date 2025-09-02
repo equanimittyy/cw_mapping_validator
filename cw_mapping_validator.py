@@ -2,6 +2,7 @@ import os
 import pandas as pd
 import xml.etree.ElementTree as ET
 import sys
+import re
 
 if getattr(sys, 'frozen', False):
     application_path = os.path.dirname(sys.executable)
@@ -12,6 +13,8 @@ elif __file__:
 working_dir = application_path
 export_dir = os.path.join(working_dir, 'attila_exports','db','main_units_tables')
 mapper_dir = '../unit mappers'
+settings_dir = '../settings'
+settings_paths_file = os.path.join(settings_dir,'Paths.xml')
 os.chdir(working_dir)
 
 if os.path.exists(export_dir):
@@ -30,9 +33,8 @@ else:
     input("Press Enter to quit...")
     quit()
 
-# Declare data frame for Attila unit mapping
+# Declare data frame for Attila unit mapping, and merge
 df_attila = pd.DataFrame()
-
 for file in os.listdir(export_dir):
     if file.endswith('.tsv'):
         # Define source of file if ends with .tsv
@@ -48,35 +50,73 @@ for file in os.listdir(export_dir):
 
 # Print merged Attila unit mapping
 print(df_attila)
-print(os.listdir(mapper_dir))
+print()
+print(f'== Found mapping directories: {os.listdir(mapper_dir)} ==')
+print()
 
-# Declare data frame for combined cw unit mapping
-# df_cultures = pd.DataFrame() -- Not necessary, as cultures do not have Attila unit keys.
+# Declare data frame for cultures from Crusader Kings 3 and obtain cultures from Crusader Kings installation.
+df_ck3_cultures = pd.DataFrame() 
+ck3_dir_path = os.path.dirname(os.path.dirname(ET.parse(settings_paths_file).getroot().find('CrusaderKings').attrib.get('path')))
+ck3_culture_dir = os.path.join(ck3_dir_path,'game','common','culture','cultures')
+ck3_rows = []
+print(f'== Found CK3 culture files: {os.listdir(ck3_culture_dir)} ==')
+print()
+for file in os.listdir(ck3_culture_dir):
+    if file.endswith('.txt'):
+        source_file = os.path.join(ck3_culture_dir,file)
+        source_name = os.path.basename(source_file)
+
+        with open (source_file, 'r', encoding="utf-8-sig") as culture_txt_file:
+            data = culture_txt_file.read()
+
+        culture_txt = re.findall(r"^(\w+)\s*=", data, re.M)
+        for culture in culture_txt:
+            ck3_rows.append({
+                "ck3_culture":culture,
+                "ck3_source":source_name
+            })
+        
+df_ck3_cultures = pd.concat([df_ck3_cultures,pd.DataFrame(ck3_rows)],ignore_index=True)
+print(df_ck3_cultures)
+
+# Declare data frame for processed cw mapping
+df_cultures = pd.DataFrame()
+cultures_rows = []
 df_factions = pd.DataFrame()
 faction_rows = []
 df_titles = pd.DataFrame()
 titles_rows = []
 
 for mapping in os.listdir(mapper_dir):
-        # culture = os.path.join(mapper_dir,mapping,'Cultures') -- Not necessary, as cultures do not have Attila unit keys.
+        cultures = os.path.join(mapper_dir,mapping,'Cultures')
         factions = os.path.join(mapper_dir,mapping,'Factions')
         titles = os.path.join(mapper_dir,mapping,'Titles')
 
-        # # Appending loop for culture  -- Not necessary, as cultures do not have Attila unit keys.
-        # if os.path.exists(culture):
-        #     print(f'Culture found in {mapping}.')
-        #     for x in os.listdir(culture):
-        #         if x.endswith('.xml'):
-        #             culture_tree = ET.parse(os.path.join(culture,x))
-        #             culture_root = culture_tree.getroot()
-        #             print(culture_root)
+        # Processing loop for cultures
+        if os.path.exists(cultures):
+            print(f'== ✝ Cultures found in {mapping}. ==')
+            for x in os.listdir(cultures):
+                if x.endswith('.xml'):
+                    print(f'// ✝ Processing {x}.')
+                    cultures_tree = ET.parse(os.path.join(cultures,x))
+                    cultures_root = cultures_tree.getroot()
+                    for cultures_parent in cultures_root:
+                        for cultures_child in cultures_parent:
+                            # Update rows
+                            cultures_rows.append({
+                                "cw_category": 'Culture',
+                                "ck3_culture": cultures_child.attrib.get('name'),
+                                "cw_culture": cultures_child.attrib.get('faction'),
+                                "cw_source_file": x,
+                                "cw_source_folder": mapping
+                            })              
 
         # Processing loop for factions
         if os.path.exists(factions):
-            print(f'== ☼ Factions found in {mapping}. ==')
+            print(f'== ⚔ Factions found in {mapping}. ==')
             for x in os.listdir(factions):
                 if x.endswith('.xml'):
-                    print(f'// ☼ Processing {x}.')
+                    print(f'// ⚔ Processing {x}.')
                     faction_tree = ET.parse(os.path.join(factions,x))
                     faction_root = faction_tree.getroot()
                     for faction_parent in faction_root:
@@ -114,11 +154,20 @@ for mapping in os.listdir(mapper_dir):
                             })     
 
 # Append processing results to df
+df_cultures = pd.concat([df_cultures,pd.DataFrame(cultures_rows)],ignore_index=True)
 df_factions = pd.concat([df_factions,pd.DataFrame(faction_rows)],ignore_index=True)     
 df_titles = pd.concat([df_titles,pd.DataFrame(titles_rows)],ignore_index=True)
 
+
 # Validate df from CW and Attila, and produce report/log
 df_attila.to_csv('report_merged_attila_mapping.csv')
+df_ck3_cultures.to_csv('report_merged_ck3_cultures.csv')
+
+df_cultures = pd.merge(df_cultures,df_ck3_cultures, on='ck3_culture', how ='left')
+df_cultures.to_csv('report_cultures.csv')
+df_cultures_error = pd.DataFrame(df_cultures[df_cultures['ck3_source'].isna()])
+df_cultures_error.to_csv('report_cultures_error.csv')
+print(f'Report produced for culture files.')
 
 df_factions = pd.merge(df_factions,df_attila, on='attila_map_key', how ='left')
 df_factions.to_csv('report_factions.csv')
