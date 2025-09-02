@@ -71,7 +71,7 @@ for mapping in os.listdir(mapper_dir):
         #             culture_root = culture_tree.getroot()
         #             print(culture_root)
 
-        # Appending loop for factions
+        # Processing loop for factions
         if os.path.exists(factions):
             print(f'== ☼ Factions found in {mapping}. ==')
             for x in os.listdir(factions):
@@ -81,7 +81,7 @@ for mapping in os.listdir(mapper_dir):
                     faction_root = faction_tree.getroot()
                     for faction_parent in faction_root:
                         for faction_child in faction_parent:
-                            # Create new row
+                            # Update rows
                             faction_rows.append({
                                 "cw_type": faction_child.tag,
                                 "cw_category": 'Faction',
@@ -92,7 +92,7 @@ for mapping in os.listdir(mapper_dir):
                                 "cw_source_folder": mapping
                             })              
                   
-        # Appending loop for titles
+        # Processing loop for titles
         if os.path.exists(titles):
             print(f'== ♠ Titles found in {mapping}. ==')
             for x in os.listdir(titles):
@@ -102,7 +102,7 @@ for mapping in os.listdir(mapper_dir):
                     titles_root = titles_tree.getroot()
                     for titles_parent in titles_root:
                         for titles_child in titles_parent:
-                            # Create new row
+                            # Update rows
                             titles_rows.append({
                                 "cw_type": titles_child.tag,
                                 "cw_category": 'Title',
@@ -113,11 +113,11 @@ for mapping in os.listdir(mapper_dir):
                                 "cw_source_folder": mapping
                             })     
 
-# Append processing results
+# Append processing results to df
 df_factions = pd.concat([df_factions,pd.DataFrame(faction_rows)],ignore_index=True)     
 df_titles = pd.concat([df_titles,pd.DataFrame(titles_rows)],ignore_index=True)
 
-# Validate data frames from CW and Attila, and produce report/log
+# Validate df from CW and Attila, and produce report/log
 df_attila.to_csv('report_merged_attila_mapping.csv')
 
 df_factions = pd.merge(df_factions,df_attila, on='attila_map_key', how ='left')
